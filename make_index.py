@@ -29,8 +29,6 @@ for url in urls:
 
 
     for entry in data:
-        # print(entry.keys())
-        # input()
         new_entry = {}
         new_entry['id'] =i  # id
         new_entry['element'] = entry['Atomic symbol']

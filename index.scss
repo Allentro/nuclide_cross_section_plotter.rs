@@ -40,3 +40,13 @@ h1 + .subtitle {
   width: 100%;
   height: 100%;
 }
+
+th.user-select-none > span {    
+  display: inline-flex;          
+  align-items: center;           
+  white-space: nowrap;            
+}
+
+th.user-select-none i.fa-solid {   
+  margin-left: .35rem;          
+}

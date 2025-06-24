@@ -7,7 +7,9 @@ body {
 body {
   align-items: center;
   display: flex;
-  justify-content: center;
+  flex-direction: column;  
+  justify-content: flex-start;
+  overflow-y: auto;   
 
   background: linear-gradient(to bottom right, #444444, #009a5b);
   font-size: 1.0rem;

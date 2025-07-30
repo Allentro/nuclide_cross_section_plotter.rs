@@ -41,7 +41,7 @@ pub struct XsCache {
 
 #[derive(Properties, PartialEq)]
 pub struct PlotProps {
-    pub selected_indexes: HashSet<usize>,
+    pub selected_ids: HashSet<i32>,
     pub is_y_log: UseStateHandle<bool>,
     pub is_x_log: UseStateHandle<bool>,
     pub clear_plot_callback: Callback<MouseEvent>,
@@ -49,17 +49,17 @@ pub struct PlotProps {
 
 #[function_component(PlotComponent)]
 pub fn plot_component(props: &PlotProps) -> Html {
-    let selected_indexes = &props.selected_indexes;
+    let selected_ids = &props.selected_ids;
     let is_y_log = props.is_y_log.clone();
     let is_x_log = props.is_x_log.clone();
 
     let p = use_async::<_, _, ()>({
-        let selected_indexes = selected_indexes.clone();
+        let selected_ids = selected_ids.clone();
         let is_y_log = is_y_log.clone();
         let is_x_log = is_x_log.clone();
 
         async move {
-            let cache = generate_cache(&selected_indexes).await;
+            let cache = generate_cache(&selected_ids).await;
 
             let id = "plot-div";
             let mut plot = Plot::new();
@@ -117,7 +117,7 @@ pub fn plot_component(props: &PlotProps) -> Html {
         }
     });
 
-    use_effect_with((selected_indexes.clone(), is_y_log.clone(), is_x_log.clone()), move |_| {
+    use_effect_with((selected_ids.clone(), is_y_log.clone(), is_x_log.clone()), move |_| {
         p.run();
     });
 
@@ -126,7 +126,7 @@ pub fn plot_component(props: &PlotProps) -> Html {
     }
 }
 
-async fn generate_cache(selected: &HashSet<usize>) -> XsCache {
+async fn generate_cache(selected: &HashSet<i32>) -> XsCache {
     // TODO add name to this so that when adding a trace the name can be set
     let mut cache_energy_values = Vec::new();
     let mut cache_cross_section_values = Vec::new();
@@ -190,8 +190,8 @@ fn convert_string(entry: &Entry) -> String {
     output
 }
 
-async fn download_xs_cache(selected_indexes: HashSet<usize>) {
-    let cache = generate_cache(&selected_indexes).await;
+async fn download_xs_cache(selected_ids: HashSet<i32>) {
+    let cache = generate_cache(&selected_ids).await;
 
     // Convert the cache data to a pretty-printed JSON string
     let json_data = serde_json::to_string_pretty(&cache).unwrap();
@@ -256,8 +256,8 @@ pub fn home() -> Html {
     let page = use_state(|| 0usize);
     let current_page = (*page).clone();
 
-    let selected_indexes = use_set(HashSet::<usize>::new());
-    let sum = selected_indexes.current().len();
+    let selected_ids = use_set(HashSet::<i32>::new());
+    let sum = selected_ids.current().len();
 
     let is_y_log = use_state(|| true);
     let is_x_log = use_state(|| true);
@@ -296,17 +296,17 @@ pub fn home() -> Html {
     };
 
     let clear_plot_callback = {
-        let selected_indexes = selected_indexes.clone();
+        let selected_ids = selected_ids.clone();
         Callback::from(move |_: MouseEvent| {
-            selected_indexes.clear();
+            selected_ids.clear();
         })
     };
 
     let callback_sum = {
-        let selected_indexes = selected_indexes.clone();
-        Callback::from(move |index: usize| {
-            if !selected_indexes.insert(index) {
-                selected_indexes.remove(&index);
+        let selected_ids = selected_ids.clone();
+        Callback::from(move |id: i32| {
+            if !selected_ids.insert(id) {
+                selected_ids.remove(&id);
             }
         })
     };
@@ -419,8 +419,7 @@ pub fn home() -> Html {
     
                 element_match && nucleons_match && reaction_match && mt_match && library_match
             })
-            .map(|(index, entry)| TableLine {
-                original_index: index,
+            .map(|(id, entry)| TableLine {
                 id: entry.id,
                 element: entry.element.clone(),
                 nucleons: entry.nucleons.clone(),
@@ -428,7 +427,7 @@ pub fn home() -> Html {
                 mt: entry.mt.clone(),
                 library: entry.library.clone(),
                 temperature: entry.temperature.clone(),
-                checked: selected_indexes.current().contains(&index),
+                checked: selected_ids.current().contains(&(id as i32)),
                 sum_callback: callback_sum.clone(),
             })
             .collect()
@@ -514,11 +513,11 @@ pub fn home() -> Html {
 
 
     let onclick_download = {
-        let selected_indexes = selected_indexes.clone();
+        let selected_ids = selected_ids.clone();
         Callback::from(move |_| {
-            let selected_indexes = selected_indexes.current().clone();
+            let selected_ids = selected_ids.current().clone();
             spawn_local(async move {
-                download_xs_cache(selected_indexes).await;
+                download_xs_cache(selected_ids).await;
             });
         })
     };
@@ -669,7 +668,7 @@ pub fn home() -> Html {
                 // />
                 <div class="flex-grow-1 p-2 input-group me-2">
                     <PlotComponent
-                        selected_indexes={(*selected_indexes.current()).clone()}
+                        selected_ids={(*selected_ids.current()).clone()}
                         is_y_log={is_y_log.clone()}
                         is_x_log={is_x_log.clone()}
                         clear_plot_callback={clear_plot_callback.clone()}
@@ -688,7 +687,6 @@ pub fn home() -> Html {
 
 #[derive(Clone, Serialize, Debug, Default)]
 struct TableLine {
-    pub original_index: usize,
     pub checked: bool,
     pub id: i32,
     pub element: String,
@@ -698,7 +696,7 @@ struct TableLine {
     pub library: String,
     pub temperature: String,
     #[serde(skip_serializing)]
-    pub sum_callback: Callback<usize>,
+    pub sum_callback: Callback<i32>,
 }
 
 impl PartialEq<Self> for TableLine {
@@ -718,9 +716,9 @@ impl TableData for TableLine {
         match field_name {
             "select" => Ok(html!( <input type="checkbox" style="width: 30px; height: 30px;" checked={self.checked}
                 onclick={
-                let value = self.original_index;
+                let id = self.id;
                 let handle_sum = self.sum_callback.clone();
-                move |_| { handle_sum.emit(value); }
+                move |_| { handle_sum.emit(id); }
                 } /> )
             ),
             "id" => Ok(html! { self.id }),

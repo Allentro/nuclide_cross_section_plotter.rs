@@ -440,8 +440,8 @@ pub fn home() -> Html {
         current_page.min((filtered_data.len() - 1) / limit)
     };
 
-    let start_index = current_page * limit;
-    let end_index = (start_index + limit).min(filtered_data.len());
+    let start = current_page * limit;
+    let end = (start + limit).min(filtered_data.len());
 
     let paginated_data = if filtered_data.is_empty() {
         Vec::new()

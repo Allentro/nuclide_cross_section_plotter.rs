@@ -446,7 +446,7 @@ pub fn home() -> Html {
     let paginated_data = if filtered_data.is_empty() {
         Vec::new()
     } else {
-        filtered_data[start_index..end_index].to_vec()
+        filtered_data[start..end].to_vec()
     };
 
     // let total = filtered_data.len().max(1);

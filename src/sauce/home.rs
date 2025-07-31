@@ -634,7 +634,7 @@ pub fn home() -> Html {
                 </button>
                 
             </div>
-                
+            // First column 
             <div class="d-flex mb-2">
                 <div class="flex-grow-1 p-2 input-group me-2">
                 <Table<TableLine> 
@@ -644,17 +644,23 @@ pub fn home() -> Html {
                     data={page_rows.clone()} 
                     orderable={true}
                 />
-                <h5>{sum}{" / 41337"}</h5>
+                  <div class="d-flex justify-content-between align-items-center mt-2 w-100">
+                    <h5 class="mb-0 align-self-center">{ sum }{ " / 41337" }</h5>
+                    <div class="my-auto">
+                        <Pagination
+                            total={total_rows}
+                            limit={limit}
+                            max_pages={1}
+                            options={pagination_options.clone()}
+                            on_page={Some(handle_page)}
+                        />
+                    </div>
+                  </div>
                 </div>
+
+                // Second column
                 <div class="flex-grow-1 p-2 input-group">
 
-                <Pagination 
-                    total={total_rows}
-                    limit={limit} 
-                    max_pages={1} 
-                    options={pagination_options.clone()} 
-                    on_page={Some(handle_page)}
-                />
                 <div class="flex-grow-1 p-2 input-group me-2">
                     <PlotComponent
                         selected_ids={(*selected_ids.current()).clone()}

@@ -4,7 +4,7 @@ use serde::Serialize;
 use web_sys::{console, HtmlInputElement, InputEvent};
 use yew_hooks::use_set;
 use yew_hooks::use_async;
-// use yew_custom_components::pagination::Pagination;
+use yew_custom_components::pagination::Pagination;
 use yew_custom_components::table::{Options, Table};
 use yew_custom_components::table::types::{ColumnBuilder, TableData};
 use crate::types::mock_data::Entry;
@@ -254,7 +254,6 @@ pub fn home() -> Html {
     let library_search = (*library_search_term).as_ref().cloned();
 
     let page = use_state(|| 0usize);
-    let current_page = (*page).clone();
 
     let selected_ids = use_set(HashSet::<i32>::new());
     let sum = selected_ids.current().len();
@@ -434,22 +433,12 @@ pub fn home() -> Html {
     };
 
     let limit = 10;
-    let current_page = if filtered_data.is_empty() {
-        0
-    } else {
-        current_page.min((filtered_data.len() - 1) / limit)
-    };
 
-    let start = current_page * limit;
-    let end = (start + limit).min(filtered_data.len());
+    let page_rows = filtered_data.clone(); 
 
-    let paginated_data = if filtered_data.is_empty() {
-        Vec::new()
-    } else {
-        filtered_data[start..end].to_vec()
-    };
-
-    // let total = filtered_data.len().max(1);
+    let total_rows = filtered_data.len(); 
+    let current_page = (*page).min(total_rows.saturating_sub(1) / limit); 
+    
 
     let oninput_element_search = {
         let element_search_term = element_search_term.clone();
@@ -522,21 +511,21 @@ pub fn home() -> Html {
         })
     };
 
-    // let pagination_options = yew_custom_components::pagination::Options::default()
-    //     .show_prev_next(true)
-    //     .show_first_last(true)
-    //     .list_classes(vec!(String::from("pagination")))
-    //     .item_classes(vec!(String::from("page-item")))
-    //     .link_classes(vec!(String::from("page-link")))
-    //     .active_item_classes(vec!(String::from("active")))
-    //     .disabled_item_classes(vec!(String::from("disabled")));
+    let pagination_options = yew_custom_components::pagination::Options::default()
+        .show_prev_next(true)
+        .show_first_last(true)
+        .list_classes(vec!(String::from("pagination")))
+        .item_classes(vec!(String::from("page-item")))
+        .link_classes(vec!(String::from("page-link")))
+        .active_item_classes(vec!(String::from("active")))
+        .disabled_item_classes(vec!(String::from("disabled")));
 
-    // let handle_page = {
-    //     let page = page.clone();
-    //     Callback::from(move |new_page: usize| {
-    //         page.set(new_page);
-    //     })
-    // };
+    let handle_page = {
+        let page = page.clone();
+        Callback::from(move |new_page: usize| {
+            page.set(new_page);
+        })
+    };
 
     html!(
         <>
@@ -652,20 +641,20 @@ pub fn home() -> Html {
                     // search={element_search.clone()} 
                     classes={classes!("table", "table-hover")} 
                     columns={columns.clone()}
-                    data={paginated_data} 
+                    data={page_rows.clone()} 
                     orderable={true}
                 />
                 <h5>{sum}{" / 41337"}</h5>
                 </div>
                 <div class="flex-grow-1 p-2 input-group">
 
-                // <Pagination 
-                //     total={total}
-                //     limit={limit} 
-                //     max_pages={6} 
-                //     options={pagination_options} 
-                //     on_page={Some(handle_page)}
-                // />
+                <Pagination 
+                    total={total_rows}
+                    limit={limit} 
+                    max_pages={1} 
+                    options={pagination_options.clone()} 
+                    on_page={Some(handle_page)}
+                />
                 <div class="flex-grow-1 p-2 input-group me-2">
                     <PlotComponent
                         selected_ids={(*selected_ids.current()).clone()}

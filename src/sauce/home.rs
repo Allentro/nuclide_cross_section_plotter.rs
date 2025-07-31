@@ -434,12 +434,15 @@ pub fn home() -> Html {
 
     let limit = 10;
 
-    let page_rows = filtered_data.clone(); 
-
     let total_rows = filtered_data.len(); 
     let current_page = (*page).min(total_rows.saturating_sub(1) / limit); 
     
+    let start          = current_page * limit;
+    let end            = (start + limit).min(total_rows);
 
+    let page_rows = if total_rows == 0 { Vec::new() } else { filtered_data[start..end].to_vec() };
+
+    
     let oninput_element_search = {
         let element_search_term = element_search_term.clone();
         Callback::from(move |e: InputEvent| {
@@ -636,8 +639,8 @@ pub fn home() -> Html {
                 <div class="flex-grow-1 p-2 input-group me-2">
                 <Table<TableLine> 
                     options={options.clone()} 
-                    limit={Some(limit)} 
-                    page={current_page} 
+                    //limit={Some(limit)} 
+                    //page={current_page} 
                     // search={element_search.clone()} 
                     classes={classes!("table", "table-hover")} 
                     columns={columns.clone()}

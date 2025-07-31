@@ -1,6 +1,8 @@
-html,
+html { 
+  min-height: 100%;
+}
+
 body {
-  height: 100%;
   margin: 0;
 }
 
@@ -10,7 +12,7 @@ body {
   flex-direction: column;  
   justify-content: flex-start;
   overflow-y: auto;   
-
+    
   background: linear-gradient(to bottom right, #444444, #009a5b);
   font-size: 1.0rem;
 }

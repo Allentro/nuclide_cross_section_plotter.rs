@@ -639,9 +639,6 @@ pub fn home() -> Html {
                 <div class="flex-grow-1 p-2 input-group me-2">
                 <Table<TableLine> 
                     options={options.clone()} 
-                    //limit={Some(limit)} 
-                    //page={current_page} 
-                    // search={element_search.clone()} 
                     classes={classes!("table", "table-hover")} 
                     columns={columns.clone()}
                     data={page_rows.clone()} 
